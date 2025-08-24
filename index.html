@@ -168,7 +168,7 @@
     document.getElementById('propertyClass').addEventListener('change', checkPrompt);
     document.getElementById('buildingExemption').addEventListener('input', checkPrompt);
 
-    // Add input event listeners to clean formatted numbers
+    // Add input and paste event listeners to clean formatted numbers
     const inputs = ['assessedLand', 'dedicatedUse', 'landExemption', 'assessedBuilding', 'buildingExemption'];
     inputs.forEach(id => {
         const input = document.getElementById(id);
@@ -181,6 +181,17 @@
             }
             this.dataset.previousValue = e.target.value;
         });
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            let pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[$,]/g, '');
+            if (pasteData !== '' && !isNaN(pasteData)) {
+                e.target.value = pasteData;
+                this.dataset.previousValue = pasteData;
+            } else if (pasteData === '') {
+                e.target.value = this.dataset.previousValue || '';
+            }
+        });
+        // Initialize previous value on load
         input.dataset.previousValue = input.value;
     });
 
