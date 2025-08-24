@@ -1,286 +1,212 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Honolulu Real Property Tax Calculator</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="manifest" href="manifest.json">
-
     <meta name="theme-color" content="#b40000">
-
     <meta name="apple-mobile-web-app-capable" content="yes">
-
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-
     <meta name="apple-mobile-web-app-title" content="Honolulu Real Property Tax Calculator">
-
     <link rel="apple-touch-icon" href="logo.png">
-
     <style>
-
         body { background-color: #f8f9fa; padding: 20px; }
-
         .container { max-width: 800px; }
-
         .card { margin-top: 20px; }
-
         .result { font-weight: bold; font-size: 1.2em; }
-
-        .btn-primary { background-color: #b40000; border-color: #b40000; }
-
-        .btn-primary:hover { background-color: #960000; border-color: #960000; }
-
     </style>
-
 </head>
-
 <body>
-
     <div class="container">
-
 <!--         <img src="https://drive.google.com/file/d/1Md8SnAlXVz4S4xnVqOZDlCOq4khsxk1Y/view?usp=drive_link" alt="SquareDeal Logo" class="d-block mx-auto mb-4" style="width: 200px;"> -->
-
         <h1 class="text-center mb-4">Honolulu Real Property Tax Calculator</h1>
-
         <p class="text-center text-muted">Calculate your Honolulu real property taxes for fiscal year July 1, 2025 to June 30, 2026 based on your Notice of Assessment.</p>
-
         
-
         <div class="card">
-
             <div class="card-body">
-
                 <form id="taxForm">
-
                     <div class="mb-3">
-
                         <label for="propertyClass" class="form-label">Property Class</label>
-
                         <select class="form-select" id="propertyClass" required>
-
                             <option value="">Select Class</option>
-
                             <option value="Residential">Residential ($3.50 / $1,000)</option>
-
                             <option value="Commercial">Commercial ($12.40 / $1,000)</option>
-
                             <option value="Industrial">Industrial ($12.40 / $1,000)</option>
-
                             <option value="Agricultural">Agricultural ($5.70 / $1,000)</option>
-
                             <option value="Vacant Agricultural">Vacant Agricultural ($8.50 / $1,000)</option>
-
                             <option value="Hotel and Resort">Hotel and Resort ($13.90 / $1,000)</option>
-
                             <option value="Preservation">Preservation ($5.70 / $1,000)</option>
-
                             <option value="Public Service">Public Service ($0.00 / $1,000)</option>
-
                             <option value="Bed and Breakfast Home">Bed and Breakfast Home ($6.50 / $1,000)</option>
-
                             <option value="Residential A">Residential A (Tiered: $4.00 first $1M, $11.40 excess / $1,000)</option>
-
                             <option value="Transient Vacation">Transient Vacation (Tiered: $9.00 first $800K, $11.50 excess / $1,000)</option>
-
                         </select>
-
                     </div>
-
                     <div class="mb-3">
-
                         <label for="assessedLand" class="form-label">Assessed Land Value ($)</label>
-
                         <input type="number" class="form-control" id="assessedLand" placeholder="e.g. 790500" min="0" required>
-
                     </div>
-
                     <div class="mb-3">
-
                         <label for="dedicatedUse" class="form-label">Dedicated Use Value ($)</label>
-
                         <input type="number" class="form-control" id="dedicatedUse" placeholder="e.g. 0" min="0" value="0" required>
-
                     </div>
-
                     <div class="mb-3">
-
                         <label for="landExemption" class="form-label">Land Exemption ($)</label>
-
                         <input type="number" class="form-control" id="landExemption" placeholder="e.g. 0" min="0" value="0" required>
-
                     </div>
-
                     <div class="mb-3">
-
                         <label for="assessedBuilding" class="form-label">Assessed Building Value ($)</label>
-
                         <input type="number" class="form-control" id="assessedBuilding" placeholder="e.g. 186800" min="0" required>
-
                     </div>
-
                     <div class="mb-3">
-
                         <label for="buildingExemption" class="form-label">Building Exemption ($)</label>
-
                         <input type="number" class="form-control" id="buildingExemption" placeholder="e.g. 120000" min="0" required>
-
                     </div>
-
-                    <div id="exemptionPrompt" class="alert alert-info mt-2" style="display:none;">Most "Residential" (but not "Residential A") properties have a home exemption, typically of $120,000. Enter it here if appropriate.</div>
-
-                    <button type="button" class="btn btn-primary w-100" onclick="calculateTax()">Calculate Tax</button>
-
+                    <div id="exemptionPrompt" class="alert alert-info mt-2" style="display:none;">Most "Residential" (but not "Residential A") properties have a home exemption, typically $120,000. Enter it above, if appropriate.</div>
                 </form>
-
                 <div id="results" class="mt-4">
-
                     <!-- Results will appear here -->
-
                 </div>
-
             </div>
-
         </div>
-
         <p class="text-center text-muted mt-4">Tip: Copy values directly from your assessment notice and paste them into the fields above.<a href="https://www.qpublic.net/hi/honolulu/search.html" style="color: #b40000; text-decoration: none;" target="_blank"> Find your tax info here.</a></p>
-
         <footer class="text-center mt-4">
-
             <span style="color: #b40000; font-weight: bold;"><a href="https://www.squareterra.com/squaredeal" style="color: #b40000; text-decoration: none;" target="_blank">A SquareDeal project</a></span>
-
             <button id="installButton" style="background-color: #b40000; color: white; border: none; border-radius: 10px; width: 40px; height: 40px; margin-left: 10px; display: none;">↓</button>
-
         </footer>
-
     </div>
 
-
-
     <script>
-    document.getElementById('propertyClass').addEventListener('change', checkPrompt);
-    document.getElementById('buildingExemption').addEventListener('input', checkPrompt);
+        // Add event listeners to trigger calculation and prompt check on input or change
+        ['propertyClass', 'assessedLand', 'dedicatedUse', 'landExemption', 'assessedBuilding', 'buildingExemption'].forEach(id => {
+            const element = document.getElementById(id);
+            element.addEventListener('input', () => {
+                calculateTax();
+                if (id === 'propertyClass' || id === 'buildingExemption') checkPrompt();
+            });
+            element.addEventListener('change', () => {
+                calculateTax();
+                if (id === 'propertyClass' || id === 'buildingExemption') checkPrompt();
+            });
+        });
 
-    // Add input and paste event listeners to clean formatted numbers
-    const inputs = ['assessedLand', 'dedicatedUse', 'landExemption', 'assessedBuilding', 'buildingExemption'];
-    inputs.forEach(id => {
-        const input = document.getElementById(id);
-        input.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[$,]/g, '');
-            if (value === '' || !isNaN(value)) {
-                e.target.value = value;
+        // Add input and paste event listeners to clean formatted numbers
+        const inputs = ['assessedLand', 'dedicatedUse', 'landExemption', 'assessedBuilding', 'buildingExemption'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[$,]/g, '');
+                if (value === '' || !isNaN(value)) {
+                    e.target.value = value;
+                } else {
+                    e.target.value = this.dataset.previousValue || '';
+                }
+                this.dataset.previousValue = e.target.value;
+                calculateTax();
+                if (id === 'buildingExemption') checkPrompt();
+            });
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                let pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[$,]/g, '');
+                if (pasteData !== '' && !isNaN(pasteData)) {
+                    e.target.value = pasteData;
+                    this.dataset.previousValue = pasteData;
+                } else if (pasteData === '') {
+                    e.target.value = this.dataset.previousValue || '';
+                }
+                calculateTax();
+                if (id === 'buildingExemption') checkPrompt();
+            });
+            // Initialize previous value on load
+            input.dataset.previousValue = input.value;
+        });
+
+        function checkPrompt() {
+            const pc = document.getElementById('propertyClass').value;
+            const be = parseFloat(document.getElementById('buildingExemption').value) || 0;
+            const prompt = document.getElementById('exemptionPrompt');
+            if (pc === 'Residential' && be <= 0) {
+                prompt.style.display = 'block';
             } else {
-                e.target.value = this.dataset.previousValue || '';
+                prompt.style.display = 'none';
             }
-            this.dataset.previousValue = e.target.value;
-        });
-        input.addEventListener('paste', function(e) {
+        }
+
+        function calculateTax() {
+            const propertyClass = document.getElementById('propertyClass').value;
+            const assessedLand = parseFloat(document.getElementById('assessedLand').value) || 0;
+            const dedicatedUse = parseFloat(document.getElementById('dedicatedUse').value) || 0;
+            const landExemption = parseFloat(document.getElementById('landExemption').value) || 0;
+            const assessedBuilding = parseFloat(document.getElementById('assessedBuilding').value) || 0;
+            const buildingExemption = parseFloat(document.getElementById('buildingExemption').value) || 0;
+
+            const netLand = assessedLand - dedicatedUse - landExemption;
+            const netBuilding = assessedBuilding - buildingExemption;
+            const totalAssessed = assessedLand + assessedBuilding;
+            const totalExemption = landExemption + buildingExemption;
+            const totalNetTaxable = netLand + netBuilding;
+
+            let annualTax = 0;
+
+            if (propertyClass === 'Residential A') {
+                const tier1 = Math.min(totalNetTaxable, 1000000);
+                const tier2 = Math.max(0, totalNetTaxable - 1000000);
+                annualTax = (tier1 / 1000 * 4.00) + (tier2 / 1000 * 11.40);
+            } else if (propertyClass === 'Transient Vacation') {
+                const tier1 = Math.min(totalNetTaxable, 800000);
+                const tier2 = Math.max(0, totalNetTaxable - 800000);
+                annualTax = (tier1 / 1000 * 9.00) + (tier2 / 1000 * 11.50);
+            } else {
+                let rate = 0;
+                switch (propertyClass) {
+                    case 'Residential': rate = 3.50; break;
+                    case 'Commercial': rate = 12.40; break;
+                    case 'Industrial': rate = 12.40; break;
+                    case 'Agricultural': rate = 5.70; break;
+                    case 'Vacant Agricultural': rate = 8.50; break;
+                    case 'Hotel and Resort': rate = 13.90; break;
+                    case 'Preservation': rate = 5.70; break;
+                    case 'Public Service': rate = 0.00; break;
+                    case 'Bed and Breakfast Home': rate = 6.50; break;
+                    default: rate = 0;
+                }
+                annualTax = (totalNetTaxable / 1000) * rate;
+            }
+
+            const semiAnnual = annualTax / 2;
+            const monthly = annualTax / 12;
+
+            document.getElementById('results').innerHTML = `
+                <h5>Calculation Results:</h5>
+                <p>Net Taxable Land Value: $${netLand.toLocaleString('en-US')}</p>
+                <p>Net Taxable Building Value: $${netBuilding.toLocaleString('en-US')}</p>
+                <p>Total Assessed Value: $${totalAssessed.toLocaleString('en-US')}</p>
+                <p>Total Exemption: $${totalExemption.toLocaleString('en-US')}</p>
+                <p class="result">Total Net Taxable Value: $${totalNetTaxable.toLocaleString('en-US')}</p>
+                <p class="result">Estimated Annual Property Tax: $${annualTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p>Semi-Annual Installment: $${semiAnnual.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p>Monthly Estimate: $${monthly.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            `;
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            let pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[$,]/g, '');
-            if (pasteData !== '' && !isNaN(pasteData)) {
-                e.target.value = pasteData;
-                this.dataset.previousValue = pasteData;
-            } else if (pasteData === '') {
-                e.target.value = this.dataset.previousValue || '';
+            deferredPrompt = e;
+            document.getElementById('installButton').style.display = 'inline-block';
+        });
+
+        document.getElementById('installButton').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+            } else {
+                alert('To add this app to your home screen, tap the share button in your browser and select "Add to Home Screen". For desktop, use your browser\'s install option.');
             }
         });
-        // Initialize previous value on load
-        input.dataset.previousValue = input.value;
-    });
-
-    function checkPrompt() {
-        const pc = document.getElementById('propertyClass').value;
-        const be = parseFloat(document.getElementById('buildingExemption').value) || 0;
-        const prompt = document.getElementById('exemptionPrompt');
-        if (pc === 'Residential' && be <= 0) {
-            prompt.style.display = 'block';
-        } else {
-            prompt.style.display = 'none';
-        }
-    }
-
-    function calculateTax() {
-        const propertyClass = document.getElementById('propertyClass').value;
-        const assessedLand = parseFloat(document.getElementById('assessedLand').value) || 0;
-        const dedicatedUse = parseFloat(document.getElementById('dedicatedUse').value) || 0;
-        const landExemption = parseFloat(document.getElementById('landExemption').value) || 0;
-        const assessedBuilding = parseFloat(document.getElementById('assessedBuilding').value) || 0;
-        const buildingExemption = parseFloat(document.getElementById('buildingExemption').value) || 0;
-
-        const netLand = assessedLand - dedicatedUse - landExemption;
-        const netBuilding = assessedBuilding - buildingExemption;
-        const totalAssessed = assessedLand + assessedBuilding;
-        const totalExemption = landExemption + buildingExemption;
-        const totalNetTaxable = netLand + netBuilding;
-
-        let annualTax = 0;
-
-        if (propertyClass === 'Residential A') {
-            const tier1 = Math.min(totalNetTaxable, 1000000);
-            const tier2 = Math.max(0, totalNetTaxable - 1000000);
-            annualTax = (tier1 / 1000 * 4.00) + (tier2 / 1000 * 11.40);
-        } else if (propertyClass === 'Transient Vacation') {
-            const tier1 = Math.min(totalNetTaxable, 800000);
-            const tier2 = Math.max(0, totalNetTaxable - 800000);
-            annualTax = (tier1 / 1000 * 9.00) + (tier2 / 1000 * 11.50);
-        } else {
-            let rate = 0;
-            switch (propertyClass) {
-                case 'Residential': rate = 3.50; break;
-                case 'Commercial': rate = 12.40; break;
-                case 'Industrial': rate = 12.40; break;
-                case 'Agricultural': rate = 5.70; break;
-                case 'Vacant Agricultural': rate = 8.50; break;
-                case 'Hotel and Resort': rate = 13.90; break;
-                case 'Preservation': rate = 5.70; break;
-                case 'Public Service': rate = 0.00; break;
-                case 'Bed and Breakfast Home': rate = 6.50; break;
-                default: rate = 0;
-            }
-            annualTax = (totalNetTaxable / 1000) * rate;
-        }
-
-        const semiAnnual = annualTax / 2;
-        const monthly = annualTax / 12;
-
-        document.getElementById('results').innerHTML = `
-            <h5>Calculation Results:</h5>
-            <p>Net Taxable Land Value: $${netLand.toLocaleString('en-US')}</p>
-            <p>Net Taxable Building Value: $${netBuilding.toLocaleString('en-US')}</p>
-            <p>Total Assessed Value: $${totalAssessed.toLocaleString('en-US')}</p>
-            <p>Total Exemption: $${totalExemption.toLocaleString('en-US')}</p>
-            <p class="result">Total Net Taxable Value: $${totalNetTaxable.toLocaleString('en-US')}</p>
-            <p class="result">Estimated Annual Property Tax: $${annualTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p>Semi-Annual Installment: $${semiAnnual.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p>Monthly Estimate: $${monthly.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-        `;
-    }
-
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('installButton').style.display = 'inline-block';
-    });
-
-    document.getElementById('installButton').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            deferredPrompt = null;
-        } else {
-            alert('To add this app to your home screen, tap the share button in your browser and select "Add to Home Screen". For desktop, use your browser\'s install option.');
-        }
-    });
-</script>
-
+    </script>
 </body>
-
 </html>
