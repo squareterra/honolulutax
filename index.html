@@ -20,7 +20,6 @@
 </head>
 <body>
     <div class="container">
-<!--         <img src="https://drive.google.com/file/d/1Md8SnAlXVz4S4xnVqOZDlCOq4khsxk1Y/view?usp=drive_link" alt="SquareDeal Logo" class="d-block mx-auto mb-4" style="width: 200px;"> -->
         <h1 class="text-center mb-4">Honolulu Real Property Tax Calculator</h1>
         <p class="text-center text-muted">Calculate your Honolulu real property taxes for fiscal year July 1, 2025 to June 30, 2026 based on your Notice of Assessment.</p>
         
@@ -65,6 +64,7 @@
                         <input type="number" class="form-control" id="buildingExemption" placeholder="e.g. 120000" min="0" required>
                     </div>
                     <div id="exemptionPrompt" class="alert alert-info mt-2" style="display:none;">Most "Residential" (but not "Residential A") properties have a home exemption, typically $120,000. Enter it above, if appropriate.</div>
+                    <div id="residentialAPrompt" class="alert alert-info mt-2" style="display:none;">Only properties with a Total Assessed Value of $1,000,000 or more can be classified as Residential A.</div>
                 </form>
                 <div id="results" class="mt-4">
                     <!-- Results will appear here -->
@@ -84,11 +84,11 @@
             const element = document.getElementById(id);
             element.addEventListener('input', () => {
                 calculateTax();
-                if (id === 'propertyClass' || id === 'buildingExemption') checkPrompt();
+                if (id === 'propertyClass' || id === 'buildingExemption' || id === 'assessedLand' || id === 'assessedBuilding') checkPrompt();
             });
             element.addEventListener('change', () => {
                 calculateTax();
-                if (id === 'propertyClass' || id === 'buildingExemption') checkPrompt();
+                if (id === 'propertyClass' || id === 'buildingExemption' || id === 'assessedLand' || id === 'assessedBuilding') checkPrompt();
             });
         });
 
@@ -105,7 +105,7 @@
                 }
                 this.dataset.previousValue = e.target.value;
                 calculateTax();
-                if (id === 'buildingExemption') checkPrompt();
+                if (id === 'buildingExemption' || id === 'assessedLand' || id === 'assessedBuilding') checkPrompt();
             });
             input.addEventListener('paste', function(e) {
                 e.preventDefault();
@@ -117,7 +117,7 @@
                     e.target.value = this.dataset.previousValue || '';
                 }
                 calculateTax();
-                if (id === 'buildingExemption') checkPrompt();
+                if (id === 'buildingExemption' || id === 'assessedLand' || id === 'assessedBuilding') checkPrompt();
             });
             // Initialize previous value on load
             input.dataset.previousValue = input.value;
@@ -126,11 +126,25 @@
         function checkPrompt() {
             const pc = document.getElementById('propertyClass').value;
             const be = parseFloat(document.getElementById('buildingExemption').value) || 0;
-            const prompt = document.getElementById('exemptionPrompt');
+            const assessedLand = parseFloat(document.getElementById('assessedLand').value) || 0;
+            const assessedBuilding = parseFloat(document.getElementById('assessedBuilding').value) || 0;
+            const totalAssessed = assessedLand + assessedBuilding;
+
+            const exemptionPrompt = document.getElementById('exemptionPrompt');
+            const residentialAPrompt = document.getElementById('residentialAPrompt');
+
+            // Check for Residential exemption prompt
             if (pc === 'Residential' && be <= 0) {
-                prompt.style.display = 'block';
+                exemptionPrompt.style.display = 'block';
             } else {
-                prompt.style.display = 'none';
+                exemptionPrompt.style.display = 'none';
+            }
+
+            // Check for Residential A prompt
+            if (pc === 'Residential A' && totalAssessed < 1000000) {
+                residentialAPrompt.style.display = 'block';
+            } else {
+                residentialAPrompt.style.display = 'none';
             }
         }
 
@@ -149,6 +163,22 @@
             const totalNetTaxable = netLand + netBuilding;
 
             let annualTax = 0;
+
+            // Check if Residential A with Total Assessed Value < $1,000,000
+            if (propertyClass === 'Residential A' && totalAssessed < 1000000) {
+                document.getElementById('results').innerHTML = `
+                    <h5>Calculation Results:</h5>
+                    <p>Net Taxable Land Value: $0</p>
+                    <p>Net Taxable Building Value: $0</p>
+                    <p>Total Assessed Value: $0</p>
+                    <p>Total Exemption: $0</p>
+                    <p class="result">Total Net Taxable Value: $0</p>
+                    <p class="result">Estimated Annual Property Tax: $0.00</p>
+                    <p>Semi-Annual Installment: $0.00</p>
+                    <p>Monthly Estimate: $0.00</p>
+                `;
+                return;
+            }
 
             if (propertyClass === 'Residential A') {
                 const tier1 = Math.min(totalNetTaxable, 1000000);
